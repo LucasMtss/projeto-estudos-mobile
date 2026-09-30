@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Minicurso Logic Jigsaw — desenvolvimento mobile</title>
+  <meta name="description" content="Minicurso sobre o app Logic Jigsaw: Expo, arquitetura, jogo, Supabase, ranking, AdMob, compras e publicação nas lojas." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #eef2ff;
+      --ink: #1e1b4b;
+      --muted: #4338ca;
+      --muted-text: #3730a3;
+      --card: #ffffff;
+      --line: #c7d2fe;
+      --primary: #4f46e5;
+      --primary-dark: #3730a3;
+      --cta: #f97316;
+      --green: #0f766e;
+      --green-bg: #ccfbf1;
+      --warn: #9a3412;
+      --warn-bg: #ffedd5;
+      --code: #1e1b4b;
+      --shadow: 0 8px 0 #c7d2fe;
+      --radius: 20px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Nunito, "Segoe UI", sans-serif;
+      font-size: 17px;
+      line-height: 1.65;
+    }
+    a { color: var(--primary-dark); }
+    a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible {
+      outline: 3px solid var(--cta);
+      outline-offset: 3px;
+    }
+    .skip {
+      position: absolute;
+      left: 12px;
+      top: -48px;
+      background: var(--ink);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 10px;
+      z-index: 20;
+    }
+    .skip:focus { top: 12px; }
+    .layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+    .side {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      padding: 20px 16px 32px;
+      background: #fff;
+      border-right: 3px solid var(--line);
+    }
+    .brand {
+      font-family: Fredoka, Nunito, sans-serif;
+      font-size: 22px;
+      margin: 0 0 4px;
+    }
+    .brand span { color: var(--primary); }
+    .side p { margin: 0 0 14px; color: var(--muted-text); font-size: 14px; }
+    .search {
+      width: 100%;
+      border: 3px solid var(--line);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font: inherit;
+      font-size: 15px;
+      margin-bottom: 14px;
+      background: #f8fafc;
+    }
+    .nav { display: flex; flex-direction: column; gap: 4px; }
+    .nav a {
+      text-decoration: none;
+      color: var(--ink);
+      border-radius: 12px;
+      padding: 8px 10px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .nav a:hover, .nav a[aria-current="true"] { background: #e0e7ff; }
+    .menu-btn {
+      display: none;
+      margin: 12px;
+      border: 3px solid var(--line);
+      background: white;
+      border-radius: 14px;
+      padding: 10px 14px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 0 var(--line);
+    }
+    main { padding: 28px 8vw 80px; max-width: 80vw; }
+    .hero {
+      background: white;
+      border: 3px solid var(--line);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+      margin-bottom: 28px;
+    }
+    h1, h2, h3 { font-family: Fredoka, Nunito, sans-serif; line-height: 1.2; }
+    h1 { font-size: clamp(32px, 5vw, 48px); margin: 0 0 10px; }
+    h2 { font-size: 30px; margin: 0 0 12px; }
+    h3 { font-size: 22px; margin: 26px 0 8px; }
+    .lead { font-size: 18px; margin-top: 0; }
+    .module {
+      background: var(--card);
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px 22px 8px;
+      margin: 0 0 22px;
+      box-shadow: 0 6px 0 #e0e7ff;
+    }
+    .kicker {
+      display: inline-block;
+      background: #e0e7ff;
+      color: var(--primary-dark);
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border-radius: 999px;
+      padding: 4px 10px;
+      margin-bottom: 8px;
+    }
+    .callout {
+      border-radius: 16px;
+      padding: 12px 14px;
+      margin: 14px 0;
+      border: 3px solid transparent;
+    }
+    .decision { background: #eef2ff; border-color: #a5b4fc; }
+    .pitfall { background: var(--warn-bg); border-color: #fdba74; color: #7c2d12; }
+    .project { background: var(--green-bg); border-color: #5eead4; }
+    .callout strong { font-family: Fredoka, Nunito, sans-serif; }
+    pre {
+      background: #1e1b4b;
+      color: #e0e7ff;
+      border-radius: 16px;
+      padding: 14px 14px 14px 16px;
+      overflow: auto;
+      font-size: 13.5px;
+      line-height: 1.5;
+      position: relative;
+    }
+    code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; }
+    p code, li code {
+      background: #e0e7ff;
+      color: var(--ink);
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-size: 0.92em;
+    }
+    .copy {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      border: 0;
+      background: #f97316;
+      color: white;
+      font: inherit;
+      font-weight: 800;
+      font-size: 13px;
+      border-radius: 10px;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+    .copy:hover { background: #ea580c; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; font-size: 15px; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 2px solid var(--line); vertical-align: top; }
+    th { font-family: Fredoka, Nunito, sans-serif; }
+    .lab {
+      background: #f8fafc;
+      border: 3px dashed #a5b4fc;
+      border-radius: 18px;
+      padding: 14px;
+      margin: 12px 0 18px;
+    }
+    .lab h3 { margin-top: 0; }
+    label { font-weight: 700; display: block; margin: 8px 0 4px; }
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      max-width: 520px;
+      border: 3px solid var(--line);
+      border-radius: 12px;
+      padding: 8px 10px;
+      font: inherit;
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+    .chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: white;
+      border: 3px solid var(--line);
+      border-radius: 12px;
+      padding: 6px 8px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.action, .progress-toggle {
+      border: 0;
+      background: var(--primary);
+      color: white;
+      font: inherit;
+      font-weight: 800;
+      border-radius: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+    }
+    button.action:hover { background: var(--primary-dark); }
+    .out {
+      margin-top: 10px;
+      font-weight: 800;
+      background: white;
+      border-radius: 12px;
+      padding: 10px 12px;
+      border: 3px solid var(--line);
+    }
+    .checks { list-style: none; padding: 0; }
+    .checks li { margin: 8px 0; }
+    .checks label { display: flex; gap: 8px; align-items: flex-start; font-weight: 700; cursor: pointer; }
+    .empty {
+      display: none;
+      background: white;
+      border: 3px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    ol.steps li { margin: 6px 0; }
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+      .menu-btn { display: inline-flex; }
+      .side {
+        display: none;
+        position: static;
+        height: auto;
+        border-right: 0;
+        border-bottom: 3px solid var(--line);
+      }
+      .side.open { display: block; }
+      main { padding: 8px 16px 64px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#conteudo">Ir para o conteúdo</a>
+  <button class="menu-btn" type="button" id="menuBtn" aria-expanded="false" aria-controls="side">Módulos</button>
+  <div class="layout">
+    <aside class="side" id="side">
+      <p class="brand">Logic <span>Jigsaw</span></p>
+      <p>Minicurso de desenvolvimento mobile, baseado neste repositório.</p>
+      <label for="q">Buscar no curso</label>
+      <input class="search" id="q" type="search" placeholder="Ex.: Supabase, ranking, APK" autocomplete="off" />
+      <nav class="nav" id="nav" aria-label="Módulos"></nav>
+    </aside>
+    <main id="conteudo">
+      <header class="hero">
+        <p class="kicker">Material de estudo</p>
+        <h1>Desenvolvendo um aplicativo mobile com React Native e Expo</h1>
+        <p class="lead">Este conteúdo é um material de estudos sobre o app Logic Jigsaw. Ele explica as tecnologias, a arquitetura, as integrações e as decisões tomadas no código de verdade.</p>
+        <p>Os blocos escuros são comandos e trechos do projeto. Os laboratórios no fim de alguns módulos rodam aqui mesmo, no JavaScript da página.</p>
+      </header>
+      <p class="empty" id="empty">Nada encontrado. Tente palavras como Expo, fase, anúncio, build ou Play Store.</p>
+
+      <article class="module" id="m0" data-title="Como estudar">
+        <p class="kicker">Módulo 0</p>
+        <h2>Como usar este conteúdo</h2>
+        <p>Leia na ordem na primeira vez. Cada módulo assume o anterior. Se você já programa, ainda vale passar pelo módulo 3, porque o Expo muda de versão e o jeito de gerar o app instalável não é o mesmo de um site.</p>
+        <h3>O que você vai aprender</h3>
+        <ul>
+          <li>Como usar o Expo Go, development build, APK de preview e AAB de produção.</li>
+          <li>Como localizar tela, regra de jogo, estado e serviço no repositório.</li>
+          <li>Como o visual foi desenhado no ChatGPT, com referências de outros apps, e as telas foram pedidas ao Cursor a partir desse design.</li>
+          <li>Como o login na nuvem é opcional e como o progresso se junta entre aparelhos.</li>
+          <li>Como o ranking global mostra nickname, fases completas e o melhor tempo de cada fase, sem expor o e-mail.</li>
+          <li>Como configurar anúncio, conta e compra sem colocar segredo no aplicativo.</li>
+          <li>Como preparar a publicação na Google Play e na App Store.</li>
+        </ul>
+        <div class="callout decision"><strong>Decisão.</strong> O curso cita caminhos reais, como <code>src/game/logic.ts</code> e <code>eas.json</code>. Números de anúncio, chaves e senhas não entram aqui. No projeto eles ficam no <code>.env</code>, que o Git ignora.</div>
+      </article>
+
+      <article class="module" id="m1" data-title="Visão do produto">
+        <p class="kicker">Módulo 1</p>
+        <h2>O que o aplicativo faz</h2>
+        <p>Logic Jigsaw é um quebra-cabeça de encaixe. O tabuleiro tem 8 por 8 casas, 64 no total. O jogador arrasta oito peças coloridas. Três peças cinza já nascem no tabuleiro e não se movem. Elas se chamam bloqueios. A fase acaba quando as oito peças do jogador e os bloqueios cobrem todas as casas, sem sobreposição.</p>
+        <p>Há 88 fases, numeradas de 1 a 88, agrupadas em cinco dificuldades de 1 a 5 estrelas: Iniciante, Fácil, Médio, Difícil e Expert. A fase 1 começa aberta. A seguinte só abre quando a atual é concluída, ou quando a pessoa assiste um anúncio premiado até o fim.</p>
+        <h3>O que existe além do tabuleiro</h3>
+        <ul>
+          <li>Recorde de tempo em cada fase, neste aparelho.</li>
+          <li>Conta opcional por e-mail, com nickname. O login com Google existe no código, mas o botão está oculto por uma flag.</li>
+          <li>Ranking global: quantas fases cada usuário concluiu e o melhor tempo de cada fase.</li>
+          <li>Anúncio de faixa, anúncio de tela cheia ao entrar na fase, e anúncio premiado para pular o cadeado.</li>
+          <li>Compra única para remover anúncios, conferida no servidor.</li>
+          <li>Internacionalização dos textos em português, inglês, espanhol, francês e alemão.</li>
+        </ul>
+      </article>
+
+      <article class="module" id="m2" data-title="Tecnologias">
+        <p class="kicker">Módulo 2</p>
+        <h2>Tecnologias e por que cada uma entrou</h2>
+        <table>
+          <thead><tr><th>Peça</th><th>Versão neste app</th><th>Papel</th></tr></thead>
+          <tbody>
+            <tr><td>Expo SDK</td><td>57</td><td>Projeto, config nativa, Metro, builds na nuvem</td></tr>
+            <tr><td>React Native</td><td>0.86</td><td>Interface que vira tela nativa e também web</td></tr>
+            <tr><td>React</td><td>19.2</td><td>Componentes e estado da tela</td></tr>
+            <tr><td>TypeScript</td><td>6</td><td>Tipos do tabuleiro, das peças e das rotas</td></tr>
+            <tr><td>Expo Router</td><td>57</td><td>Uma pasta vira as telas</td></tr>
+            <tr><td>Zustand</td><td>5</td><td>Sessão, nickname, progresso, idioma, desbloqueio por anúncio</td></tr>
+            <tr><td>Supabase</td><td>JS 2.117</td><td>Login, recordes, ranking e conferência da compra</td></tr>
+            <tr><td>Google Mobile Ads</td><td>17</td><td>Banner, interstitial e rewarded</td></tr>
+            <tr><td>expo-iap</td><td>5</td><td>Compra na loja</td></tr>
+            <tr><td>MMKV e AsyncStorage</td><td>—</td><td>Gravar recorde no aparelho</td></tr>
+          </tbody>
+        </table>
+        <h3>O que não é</h3>
+        <p>Não há servidor Node próprio. Não há banco dentro do celular além do armazenamento local. A web existe para desenvolver no navegador, com <code>react-native-web</code>. Anúncio, compra e login com Google nativo não funcionam nessa web: cada um tem um arquivo <code>.web.ts</code> que desliga a parte nativa.</p>
+        <div class="callout decision"><strong>Decisão.</strong> O alias <code>@/</code> aponta para <code>src/</code> no <code>tsconfig.json</code>. Telas ficam em <code>app/</code>. Regra de jogo, serviços e componentes ficam fora de <code>app/</code>, porque arquivo dentro de <code>app/</code> vira rota.</div>
+      </article>
+
+      <article class="module" id="m3" data-title="Expo">
+        <p class="kicker">Módulo 3</p>
+        <h2>Como o Expo funciona</h2>
+        <p>Expo é um conjunto de ferramentas em volta do React Native. Você escreve TypeScript. O Metro empacota esse JavaScript. O app nativo, feito de Android ou iOS, carrega esse pacote e desenha os componentes com vistas nativas.</p>
+        <h3>Três modos de rodar</h3>
+        <table>
+          <thead><tr><th>Modo</th><th>O que você instala</th><th>De onde vem o JavaScript</th></tr></thead>
+          <tbody>
+            <tr><td>Expo Go</td><td>App genérico da Expo</td><td>Do seu computador, via <code>npx expo start</code></td></tr>
+            <tr><td>Development build</td><td>Um app seu, com as bibliotecas nativas do projeto</td><td>Ainda do computador. A tela pede o servidor local</td></tr>
+            <tr><td>Preview ou produção</td><td>O jogo de verdade</td><td>O JavaScript já está dentro do APK ou do AAB</td></tr>
+          </tbody>
+        </table>
+        <p>Este projeto usa bibliotecas que o Expo Go não traz prontas: anúncios, compra e login Google. Por isso o perfil <code>development</code> em <code>eas.json</code> tem <code>developmentClient: true</code>. Quem instala essa build vê a tela da Expo pedindo <code>npx expo start</code>. Isso não é falha do jogo. É o cliente de desenvolvimento.</p>
+        <div class="callout pitfall"><strong>Problemas encontrados.</strong> Instalar a build <code>development</code> e esperar o jogo instalável. Para um APK que abre direto, o perfil é <code>preview</code>, sem <code>developmentClient</code>.</div>
+        <h3>Configuração nativa sem pastas android e ios</h3>
+        <p>Não existem pastas <code>android/</code> e <code>ios/</code> no Git. O Expo gera o projeto nativo na hora do build, a partir de <code>app.json</code> e dos plugins. Isso se chama Continuous Native Generation. Ícone, pacote <code>app.logicjigsaw.game</code>, splash e o id do AdMob moram no <code>app.json</code>, não em arquivo Java ou Swift escrito à mão.</p>
+        <h3>Scripts do dia a dia</h3>
+        <pre><code>npm install
+npx expo start
+npx tsc --noEmit</code><button class="copy" type="button">Copiar</button></pre>
+        <p><code>expo start</code> sobe o Metro. O script <code>start</code> do <code>package.json</code> usa <code>expo start --go</code>. Para a web: <code>npx expo start --web</code>. Variáveis <code>EXPO_PUBLIC_</code> só entram no pacote quando o Metro ou o EAS Build sobe de novo. Mudou o <code>.env</code>, reinicie o servidor.</p>
+      </article>
+
+      <article class="module" id="m4" data-title="Arquitetura">
+        <p class="kicker">Módulo 4</p>
+        <h2>Arquitetura do repositório</h2>
+        <pre><code>app/                 telas e rotas
+  index.tsx          início
+  levels/index.tsx   as 5 dificuldades
+  levels/[stars].tsx fases daquela dificuldade
+  play/[id].tsx      uma fase
+  auth.tsx           conta e nickname
+  ranking.tsx        ranking global
+  settings.tsx       idioma e reset
+  _layout.tsx        fontes, anúncios, hidratar progresso
+src/game/            regras puras, sem React
+src/data/            as 88 fases e suas configurações no tabuleiro
+src/components/      tabuleiro, bandeja, modais, dropdown de fase
+src/store/           Zustand
+src/services/        Supabase, perfil, ranking, anúncio, compra, sync
+src/ads/             AdMob e a versão web que desliga anúncio
+src/i18n/            internacionalização dos textos
+supabase/            SQL e a função da compra
+eas.json             perfis de build</code><button class="copy" type="button">Copiar</button></pre>
+        <h3>Por que a regra do jogo não fica no componente</h3>
+        <p><code>src/game/logic.ts</code> não importa React. Ele só responde: esta peça cabe aqui? O tabuleiro está cheio? Isso deixa a regra testável e impede a tela de inventar uma segunda definição de vitória. A tela em <code>app/play/[id].tsx</code> só desenha, escuta o gesto e chama o hook <code>useGame</code>.</p>
+        <div class="callout decision"><strong>Decisão.</strong> Estado de sessão e de recorde fica no Zustand, não em Context, porque várias telas leem o mesmo recorde e o serviço de sync também precisa ler fora de um componente, com <code>useProgress.getState()</code>.</div>
+        <h3>Fluxo de uma jogada</h3>
+        <ol class="steps">
+          <li>A pessoa arrasta uma peça da bandeja ou do tabuleiro.</li>
+          <li><code>canPlace</code> olha limites e casas já ocupadas.</li>
+          <li>Se couber, <code>commit</code> grava a lista de peças e o histórico de desfazer.</li>
+          <li>Se as oito peças estão colocadas e nenhuma casa ficou vazia, <code>isSolved</code> dispara a vitória.</li>
+          <li>O recorde local é gravado. Se houver sessão, <code>pushWin</code> envia o tempo ao Supabase. O ranking lê esse tempo só depois que a conta tem nickname.</li>
+        </ol>
+      </article>
+
+      <article class="module" id="m5" data-title="Rotas e estado">
+        <p class="kicker">Módulo 5</p>
+        <h2>Rotas, estado e armazenamento</h2>
+        <p>Expo Router trata cada arquivo em <code>app/</code> como uma tela. <code>play/[id].tsx</code> lê o número da fase com <code>useLocalSearchParams</code>. A navegação usa <code>router.push</code> e <code>router.replace</code>. <code>replace</code> na próxima fase evita uma pilha enorme de telas de jogo.</p>
+        <h3>O que cada store guarda</h3>
+        <table>
+          <thead><tr><th>Store</th><th>Conteúdo</th><th>Sobrevive ao fechar o app</th></tr></thead>
+          <tbody>
+            <tr><td><code>useProgress</code></td><td>Melhor tempo por fase</td><td>Sim, MMKV ou AsyncStorage</td></tr>
+            <tr><td><code>useAdUnlocks</code></td><td>Fases abertas por anúncio</td><td>Sim, outra chave</td></tr>
+            <tr><td><code>useAuth</code></td><td>Sessão do Supabase e nickname</td><td>A sessão sim. O nickname é relido da tabela <code>profiles</code></td></tr>
+            <tr><td><code>useI18n</code></td><td>Idioma escolhido</td><td>Sim</td></tr>
+            <tr><td><code>useEntitlement</code></td><td>Anúncios removidos</td><td>Espelha a tabela na nuvem</td></tr>
+          </tbody>
+        </table>
+        <p><code>src/storage/kv.ts</code> tenta abrir MMKV, que é rápido e síncrono no nativo. No Expo Go e na web, cai para AsyncStorage. A chave do progresso é <code>logic-jigsaw-progress-v1</code>. O desbloqueio por anúncio usa outra chave, de propósito: assistir anúncio não é o mesmo que vencer a fase.</p>
+        <div class="callout decision"><strong>Decisão.</strong> Apagar os dados em Ajustes limpa progresso e desbloqueios juntos. Se só o recorde sumisse, a pessoa continuaria com fases abertas pelo anúncio sem histórico.</div>
+      </article>
+
+      <article class="module" id="m6" data-title="Regras do jogo">
+        <p class="kicker">Módulo 6</p>
+        <h2>Regras do jogo e o cadeado das fases</h2>
+        <p>Uma peça tem id, cor, largura e altura. Rotação 0 é deitada. Rotação 1 troca largura e altura quando os lados são diferentes. O quadrado azul 2×2 não gira, porque o resultado seria o mesmo.</p>
+        <pre><code>export function isSolved(blockers, placed) {
+  if (placed.length !== 8) return false;
+  const owners = buildOwners(blockers, placed);
+  return owners.every((owner) =&gt; owner !== null);
+}</code><button class="copy" type="button">Copiar</button></pre>
+        <p>O cadeado não olha o tempo. Ele olha a ordem das 88 fases. A fase 1 está sempre aberta. A fase N abre se a anterior foi concluída, ou se esta fase foi liberada por anúncio e a anterior também já estava alcançável. Fases mais à frente continuam fechadas. O anúncio libera só a próxima.</p>
+        <pre><code>let open = true;
+for (let cursor = 1; cursor &lt;= index; cursor += 1) {
+  const previousCompleted = done.has(PUZZLES[cursor - 1].id);
+  const grantedThis = granted.has(PUZZLES[cursor].id);
+  open = open &amp;&amp; (previousCompleted || grantedThis);
+  if (!open) return false;
+}
+return true;</code><button class="copy" type="button">Copiar</button></pre>
+        <p>Isso está em <code>src/data/puzzles.ts</code>. A lista de fases usa o <code>id</code> global, de 1 a 88, e não recomeça em 1 dentro de cada dificuldade. O grupo de estrelas só abre quando alguma fase dele já está desbloqueada. Tocar a próxima fase fechada abre o modal. Tocar uma fase bem mais à frente não oferece anúncio.</p>
+        <div class="lab" id="lab-unlock">
+          <h3>Laboratório: cadeado</h3>
+          <p>Marque as fases concluídas e as liberadas por anúncio. O resultado usa a mesma regra do app, numa trilha de 8 fases.</p>
+          <div class="row" id="doneRow"></div>
+          <div class="row" id="grantRow"></div>
+          <button class="action" type="button" id="runUnlock">Calcular</button>
+          <div class="out" id="unlockOut" role="status"></div>
+        </div>
+      </article>
+
+      <article class="module" id="m-design" data-title="Design">
+        <p class="kicker">Módulo 7</p>
+        <h2>Design</h2>
+        <p>O visual deste app não nasceu num arquivo de design separado dentro do repositório. Cada tela foi desenhada no ChatGPT, com referências de outros aplicativos. A imagem ou o layout gerado ali foi a especificação. Depois, no Cursor, o pedido foi implementar aquela tela no projeto Expo, copiando o design gerado e encaixando nas rotas e nos componentes que já existiam.</p>
+        <h3>Como o processo andou</h3>
+        <ol class="steps">
+          <li>Juntar referências de outros apps: início, lista de fases, tabuleiro, perfil, tutorial. O que interessava era o clima da tela, não copiar marca nem texto de terceiro.</li>
+          <li>Pedir ao ChatGPT o design de uma tela por vez, nessa direção. Uma conversa por tela evita um desenho genérico que não cabe no celular.</li>
+          <li>Trazer esse design para o Cursor e pedir a tela correspondente. Início, níveis, jogo, tutorial, perfil, ajustes e ranking saíram assim.</li>
+          <li>Abrir a tela no app e comparar com a imagem. O que a figura não mostra, área segura, scroll e texto que quebra, se ajusta numa segunda pergunta ao Cursor.</li>
+        </ol>
+        <div class="callout decision"><strong>Decisão.</strong> O ChatGPT explora o visual. O Cursor escreve o React Native. Misturar os dois no mesmo passo costuma produzir uma tela bonita que ignora o estado, a rota e o idioma que o projeto já tem.</div>
+        <div class="callout project"><strong>No projeto.</strong> O resultado ficou nas telas de <code>app/</code> e nos componentes de <code>src/components/</code>. Cores e a fonte Nunito estão em <code>src/theme/theme.ts</code>. O verde do cabeçalho, o fundo creme e os cartões brancos são o que se repetiu a partir desses designs.</div>
+        <div class="callout pitfall"><strong>Problema.</strong> A imagem gerada não é uma medida. Peças do tutorial nasceram sobrepostas, e o banner chegou a cobrir a bandeja. A correção foi no código, olhando a tela rodando, não pedindo outro desenho do zero.</div>
+      </article>
+
+      <article class="module" id="m7" data-title="Interface e idiomas">
+        <p class="kicker">Módulo 8</p>
+        <h2>Interface, gesto e idiomas</h2>
+        <p>A peça selecionada, na bandeja ou no tabuleiro, ganha borda verde neon em <code>PieceShape</code>. O tabuleiro escuta toque e arraste com <code>react-native-gesture-handler</code>. Enquanto a peça se move, a tela de jogo para de rolar, para o scroll vertical não brigar com o arraste.</p>
+        <p>O banner fica fora do <code>ScrollView</code>, num rodapé próprio. Se o tabuleiro, os botões e a bandeja não couberem, a pessoa faz o scroll da tela. O anúncio permanece embaixo e não cobre as peças.</p>
+        <h3>Textos</h3>
+        <p><code>src/i18n/locales/pt-BR.ts</code> é a fonte dos tipos. Os outros idiomas precisam das mesmas chaves, senão o TypeScript reclama. <code>useT()</code> lê o idioma atual. Mensagens de login não mostram o inglês cru do Supabase: <code>src/services/authError.ts</code> traduz códigos como <code>email_not_confirmed</code> e <code>invalid_credentials</code>.</p>
+        <div class="callout decision"><strong>Decisão.</strong> A confirmação de e-mail, quando o Supabase exige, não é tratada como falha vermelha. O cadastro sem sessão vira um aviso verde: o link foi enviado. Conta já existente continua como erro.</div>
+      </article>
+
+      <article class="module" id="m8" data-title="Supabase">
+        <p class="kicker">Módulo 9</p>
+        <h2>Supabase: conta, tabelas e segurança</h2>
+        <p>Supabase junta três serviços no mesmo projeto: autenticação (GoTrue), banco Postgres com uma API automática (PostgREST) e funções na borda (Edge Functions). A URL do projeto é só a raiz, por exemplo <code>https://xxxx.supabase.co</code>. O cliente JavaScript acrescenta <code>/auth/v1</code> para login e <code>/rest/v1</code> para tabelas.</p>
+        <div class="callout pitfall"><strong>Problema que aconteceu.</strong> A variável veio como <code>https://xxxx.supabase.co/rest/v1/</code>. O login foi para <code>/rest/v1/auth/v1/signup</code>. O banco respondeu “Invalid path specified in request URL”. <code>projectUrl</code> em <code>src/services/supabase.ts</code> corta uma barra final e um <code>/rest/v1</code> no fim. Ainda assim, cole a raiz, sem esse sufixo.</div>
+        <h3>Criar o projeto</h3>
+        <ol class="steps">
+          <li>Entre em <code>supabase.com</code> e crie uma organização, se ainda não tiver. A organização é a conta. O projeto é o banco deste app.</li>
+          <li>New project. Dê um nome, por exemplo Logic Jigsaw. Escolha a região perto de quem joga. A região fica definida na criação.</li>
+          <li>Defina a senha do banco e guarde num gerenciador. Essa senha abre o Postgres direto. O aplicativo não lê essa senha. Não crie variável <code>EXPO_PUBLIC_</code> com ela.</li>
+          <li>Espere o projeto ficar pronto. Enquanto o painel mostra o provisionamento, a URL ainda não responde.</li>
+        </ol>
+        <h3>Onde copiar a URL e a chave</h3>
+        <p>No projeto aberto, vá em Project Settings e depois em API, ou em API Keys, conforme o painel. São dois valores, e os nomes na tela mudaram. O que importa é o papel de cada um.</p>
+        <table>
+          <thead><tr><th>No painel</th><th>Variável do app</th><th>Pode ir no APK</th></tr></thead>
+          <tbody>
+            <tr><td>Project URL, no formato <code>https://xxxx.supabase.co</code></td><td><code>EXPO_PUBLIC_SUPABASE_URL</code></td><td>Sim</td></tr>
+            <tr><td>Chave <code>anon</code> / public, ou a chave publishable (<code>sb_publishable_…</code>)</td><td><code>EXPO_PUBLIC_SUPABASE_ANON_KEY</code></td><td>Sim. O RLS limita o que ela faz</td></tr>
+            <tr><td>Chave <code>service_role</code> ou secret (<code>sb_secret_…</code>)</td><td>Nenhuma no app. A Edge Function já recebe <code>SUPABASE_SERVICE_ROLE_KEY</code> no servidor</td><td>Não</td></tr>
+            <tr><td>Senha do banco, pedida na criação</td><td>Nenhuma no app</td><td>Não</td></tr>
+          </tbody>
+        </table>
+        <p>A chave anon e a publishable servem para o mesmo lugar neste cliente: o segundo argumento de <code>createClient</code> em <code>src/services/supabase.ts</code>. Não use a service role nesse campo. Com ela, o aplicativo ignoraria o RLS e qualquer pessoa com o APK leria e gravaria a tabela inteira.</p>
+        <div class="callout decision"><strong>Decisão.</strong> Sem as duas variáveis <code>EXPO_PUBLIC_SUPABASE_*</code>, <code>supabaseConfigured</code> fica falso e o jogo continua só no aparelho. A tela de entrar avisa para configurar o Supabase. Foi o que o primeiro APK de preview fez, porque o <code>.env</code> local não tinha sido copiado para o EAS.</div>
+        <h3>Colar no .env e no EAS</h3>
+        <p>Copie <code>.env.example</code> para <code>.env</code> na raiz. Preencha só estas duas linhas do Supabase. Reinicie o Metro. Variável <code>EXPO_PUBLIC_</code> entra no pacote na subida do servidor, não quando o arquivo é salvo.</p>
+        <pre><code>EXPO_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=cole-a-chave-anon-ou-publishable</code><button class="copy" type="button">Copiar</button></pre>
+        <p>O <code>.env</code> está no <code>.gitignore</code>. A build na nuvem não o vê. Grave as mesmas duas variáveis nos ambientes preview e production. Visibilidade sensitive ou plaintext. Secret não é copiada para o JavaScript, e o login volta a dizer que o Supabase não está configurado.</p>
+        <pre><code>npx eas-cli env:set --name EXPO_PUBLIC_SUPABASE_URL --value "https://xxxx.supabase.co" --visibility sensitive --environment preview --environment production --environment development --non-interactive
+npx eas-cli env:set --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value "cole-a-chave-anon-ou-publishable" --visibility sensitive --environment preview --environment production --environment development --non-interactive</code><button class="copy" type="button">Copiar</button></pre>
+        <p>Depois disso, gere outro APK. O pacote já instalado não passa a enxergar a chave nova.</p>
+        <h3>Auth e o SQL</h3>
+        <p>Em Authentication, o provedor Email já nasce ligado. A senha mínima do painel deve continuar em 6, que é o que a tela recusa antes de chamar a rede. Se “Confirm email” estiver ligado, o cadastro não devolve sessão: o app mostra o aviso verde para abrir o link. O login só funciona depois desse clique. Este app não usa redirect no navegador (<code>detectSessionInUrl: false</code>), então o link do e-mail só precisa confirmar o usuário no Supabase. Não é obrigatório cadastrar o esquema <code>logicjigsaw://</code> para o e-mail e senha.</p>
+        <p>O login com Google, no painel, é outro provedor. O botão está oculto no app. Não precisa configurar esse provedor para o ranking nem para o e-mail.</p>
+        <p>Ainda não há tabelas. Em SQL Editor, nova query, cole o arquivo <code>supabase/schema.sql</code> inteiro e rode. Ele cria <code>puzzle_progress</code>, <code>profiles</code>, <code>user_preferences</code>, <code>user_entitlements</code>, as políticas de RLS, o gatilho do nickname e as funções do ranking. Sem essa query, o login pode funcionar e o primeiro recorde na nuvem falha, porque a tabela não existe.</p>
+        <div class="callout pitfall"><strong>Problema.</strong> Rodar o SQL de novo é seguro nos trechos com <code>if not exists</code> e <code>drop policy if exists</code>. As políticas antigas de <code>puzzle_progress</code>, no topo do arquivo, usam <code>create policy</code> sem drop. Na segunda execução esse começo pode acusar política já existente. Se o projeto já tem as tabelas, rode só o trecho novo, a partir de <code>profiles</code>.</div>
+        <h3>Chave anônima não é senha do banco</h3>
+        <p><code>EXPO_PUBLIC_SUPABASE_ANON_KEY</code> vai dentro do aplicativo. Ela só identifica o projeto e o papel <code>anon</code>. Quem protege os dados é o Row Level Security. A senha do Postgres e a <code>service_role</code> nunca entram no app. A função <code>verify-purchase</code> usa a service role só no servidor, para gravar a compra. O aplicativo não tem política de insert nessa tabela: ele só lê a própria linha. <code>SUPABASE_URL</code>, <code>SUPABASE_ANON_KEY</code> e <code>SUPABASE_SERVICE_ROLE_KEY</code> da função são injetadas pelo Supabase. O segredo que você cadastra à parte, no painel da função, é <code>GOOGLE_PLAY_SERVICE_ACCOUNT</code>.</p>
+        <h3>Tabelas</h3>
+        <ul>
+          <li><code>puzzle_progress</code>: usuário, fase, melhor tempo. Único por usuário e fase.</li>
+          <li><code>profiles</code>: nickname público do ranking. O e-mail continua só em <code>auth.users</code>.</li>
+          <li><code>user_preferences</code>: esconder o tutorial.</li>
+          <li><code>user_entitlements</code>: <code>ads_removed</code>. Escrita só pelo servidor.</li>
+        </ul>
+        <p>Cada política compara <code>auth.uid()</code> com <code>user_id</code>. Sem login, essas linhas não aparecem. O jogo continua, só que o recorde fica no aparelho.</p>
+        <h3>Como os recordes se juntam</h3>
+        <p><code>pullAndMerge</code> baixa os tempos da conta e fica com o menor tempo de cada fase. Se o aparelho tiver um tempo melhor, ele sobe de volta com <code>upsert</code>. Assim dois aparelhos não apagam o recorde um do outro.</p>
+        <p>O SQL está em <code>supabase/schema.sql</code>. Ele se cola no SQL Editor do painel. Não há Prisma neste app. O ranking, que precisa ler tempos de outras pessoas sem abrir a tabela inteira, está no módulo seguinte.</p>
+        <div class="lab" id="lab-url">
+          <h3>Laboratório: URL do projeto</h3>
+          <label for="urlInput">Cole uma URL de Supabase</label>
+          <input id="urlInput" type="text" value="https://xxxx.supabase.co/rest/v1/" />
+          <button class="action" type="button" id="runUrl">Normalizar</button>
+          <div class="out" id="urlOut" role="status"></div>
+        </div>
+        <h3>Script para conferir o cliente</h3>
+        <pre><code>node -e "const raw=process.argv[1]; const url=raw.trim().replace(/\/+$/, '').replace(/\/rest\/v1$/i, ''); console.log('auth', new URL('auth/v1/signup', url).href); console.log('rest', new URL('rest/v1', url).href);" "https://xxxx.supabase.co/rest/v1/"</code><button class="copy" type="button">Copiar</button></pre>
+      </article>
+
+      <article class="module" id="m-ranking" data-title="Ranking">
+        <p class="kicker">Módulo 10</p>
+        <h2>Nickname e ranking global</h2>
+        <p>O ranking mostra quem jogou, sem mostrar o e-mail. O nome público é o nickname, de 3 a 16 letras, números ou <code>_</code>. Maiúsculas e minúsculas contam como o mesmo nome: o índice único é <code>lower(nickname)</code>. A tela fica em <code>app/ranking.tsx</code>. A home e o perfil apontam para ela.</p>
+        <h3>Quem aparece</h3>
+        <p>Criar conta exige nickname. <code>signUp</code> manda esse nome nos metadados do usuário e, se a sessão já nascer, grava a linha em <code>profiles</code> com <code>upsertNickname</code>. Se o Supabase pedir confirmação de e-mail, a sessão ainda não existe. O gatilho <code>handle_new_user</code> copia o nickname dos metadados na hora em que o usuário é criado. Se o nome já estiver em uso ou for inválido, o gatilho engole o erro e a conta nasce sem nickname. A pessoa escolhe outro depois, no perfil.</p>
+        <p>Quem já tem conta edita o nickname na mesma tela. <code>useAuth.saveNickname</code> chama o upsert. Visitante abre o ranking, porque as funções aceitam o papel <code>anon</code>, mas só entra na lista depois de entrar e salvar um nickname. Os tempos que já estavam em <code>puzzle_progress</code> passam a contar nesse momento: o ranking junta perfil e tempos pelo <code>user_id</code>.</p>
+        <div class="callout decision"><strong>Decisão.</strong> A tabela <code>profiles</code> continua com RLS só da própria linha. O ranking não faz select aberto em <code>puzzle_progress</code>. Duas funções <code>security definer</code> leem os tempos de todo mundo e devolvem só nickname, contagem e tempo. <code>search_path</code> fica preso em <code>public</code>. E-mail e <code>user_id</code> não saem da função.</div>
+        <h3>As duas listas</h3>
+        <table>
+          <thead><tr><th>Aba</th><th>Função</th><th>Ordem</th></tr></thead>
+          <tbody>
+            <tr><td>Fases completas</td><td><code>leaderboard_players()</code></td><td>Mais fases primeiro. Empate: menor soma dos recordes. Até 100 nicknames</td></tr>
+            <tr><td>Tempos da fase</td><td><code>leaderboard_phase_times(phase_id)</code></td><td>Menor tempo da fase escolhida. Até 50 nicknames</td></tr>
+          </tbody>
+        </table>
+        <pre><code>select
+  p.nickname,
+  count(pp.puzzle_id)::integer,
+  coalesce(sum(pp.best_time_ms), 0)::bigint
+from public.profiles p
+left join public.puzzle_progress pp on pp.user_id = p.user_id
+group by p.user_id, p.nickname
+order by count(pp.puzzle_id) desc,
+         coalesce(sum(pp.best_time_ms), 0) asc
+limit 100;</code><button class="copy" type="button">Copiar</button></pre>
+        <p>O cliente não monta esse SQL. <code>src/services/ranking.ts</code> chama <code>supabase.rpc</code>. A aba de tempos passa o id da fase:</p>
+        <pre><code>supabase.rpc("leaderboard_phase_times", { phase_id: puzzleId })</code><button class="copy" type="button">Copiar</button></pre>
+        <h3>Dropdown das 88 fases</h3>
+        <p><code>src/components/PhaseDropdown.tsx</code> mostra a fase atual e o nível, por exemplo “Fase 5 • Iniciante”. O toque abre uma lista com as 88 fases de <code>PUZZLES</code>. A lista já nasce na fase selecionada, com <code>initialScrollIndex</code>. Escolher uma fase fecha o menu e troca o <code>phaseId</code>. A tela busca de novo as duas listas. A linha do próprio nickname ganha a marca “Você”, comparando sem diferenciar maiúsculas.</p>
+        <div class="callout pitfall"><strong>Problema.</strong> Se o SQL novo não rodou no projeto, o PostgREST responde que a função não está no schema cache. A tela mostra que o ranking ainda não está no Supabase. O arquivo a colar no SQL Editor é o trecho de <code>profiles</code> e das duas funções em <code>supabase/schema.sql</code>.</div>
+        <div class="callout project"><strong>No projeto.</strong> A frase da tela, nos cinco idiomas, é a de <code>ranking.subtitle</code>. Em português: “Recordes globais. Faça seu melhor para subir no ranking!”</div>
+      </article>
+
+      <article class="module" id="m9" data-title="AdMob">
+        <p class="kicker">Módulo 11</p>
+        <h2>Anúncios com AdMob</h2>
+        <p>Há três formatos. O banner é a faixa fixa. O interstitial é a tela cheia ao abrir uma fase. O rewarded é o vídeo que a pessoa escolhe assistir para abrir a próxima fase. Os ids ficam em variáveis <code>EXPO_PUBLIC_ADMOB_*</code>. O id do aplicativo Android também está no plugin de <code>app.json</code>, porque o nativo precisa dele antes do JavaScript.</p>
+        <table>
+          <thead><tr><th>Formato</th><th>Variável</th><th>Quando aparece</th></tr></thead>
+          <tbody>
+            <tr><td>Banner</td><td><code>EXPO_PUBLIC_ADMOB_BANNER_ID</code></td><td>Rodapé, fora do scroll do jogo</td></tr>
+            <tr><td>Interstitial</td><td><code>EXPO_PUBLIC_ADMOB_INTERSTITIAL_ID</code></td><td>Uma vez ao entrar na fase. O cronômetro começa depois</td></tr>
+            <tr><td>Rewarded</td><td><code>EXPO_PUBLIC_ADMOB_REWARDED_ID</code></td><td>Botão do modal da próxima fase bloqueada</td></tr>
+          </tbody>
+        </table>
+        <p><code>src/ads/AdService.web.ts</code> devolve anúncio desligado. Por isso, no navegador, o modal da fase bloqueada não mostra “Desbloquear com anúncio”. No APK, o botão só existe se <code>EXPO_PUBLIC_ADS_ENABLED</code> for <code>true</code>, o id rewarded estiver na build e a pessoa não tiver comprado a remoção.</p>
+        <div class="callout decision"><strong>Decisão.</strong> A fase só destrava se o evento <code>EARNED_REWARD</code> chegar. Fechar o vídeo antes disso não conta. O desbloqueio vai para <code>useAdUnlocks</code>, não para o recorde. A fase continua sem check de concluída.</div>
+        <div class="callout pitfall"><strong>Problema.</strong> O <code>.env</code> local não viaja para o EAS. A build na nuvem lê as variáveis do ambiente preview ou production. Sem <code>EXPO_PUBLIC_ADMOB_REWARDED_ID</code> lá, o botão some no celular mesmo com o código novo.</div>
+        <h3>Dois ids diferentes</h3>
+        <p>O painel entrega dois códigos, e eles não se substituem. O id do <strong>app</strong> tem um til: <code>ca-app-pub-xxxx~yyyy</code>. Ele entra no <code>app.json</code>, no plugin <code>react-native-google-mobile-ads</code> (<code>androidAppId</code> e <code>iosAppId</code>) e no bloco <code>react-native-google-mobile-ads</code> no fim do mesmo arquivo. O nativo lê isso na hora do build. Trocar só o <code>.env</code> não muda o id do app.</p>
+        <p>O id do <strong>bloco</strong> tem uma barra: <code>ca-app-pub-xxxx/zzzz</code>. São três, um por formato. Eles vão para <code>EXPO_PUBLIC_ADMOB_BANNER_ID</code>, <code>EXPO_PUBLIC_ADMOB_INTERSTITIAL_ID</code> e <code>EXPO_PUBLIC_ADMOB_REWARDED_ID</code>. Colocar o id do app numa dessas variáveis, ou o bloco de banner na variável do premiado, faz o anúncio não carregar.</p>
+        <h3>Criar o app no AdMob</h3>
+        <ol class="steps">
+          <li>Entre em <code>admob.google.com</code> com a conta Google do projeto. Para receber de verdade, a conta precisa de um perfil de pagamentos. Dá para criar blocos antes disso. Anúncio real pode não veicular enquanto a conta não for aprovada.</li>
+          <li>Em Apps, adicione um app. A plataforma deste APK é Android. O pacote tem de ser o mesmo de <code>app.json</code>: <code>app.logicjigsaw.game</code>. Se o app ainda não está na Play, o painel deixa seguir sem loja e vincular o pacote depois.</li>
+          <li>Copie o id do app, o que contém <code>~</code>, para os dois lugares do <code>app.json</code> citados acima.</li>
+          <li>Gere um build novo. O id do app só passa a valer no binário seguinte.</li>
+        </ol>
+        <div class="callout project"><strong>No projeto.</strong> Os dois ids de app no <code>app.json</code> deste repositório são os de teste do Google. O id real da sua conta AdMob não fica no Git: troque os dois campos antes de publicar. iOS é outro app na mesma conta AdMob, com o bundle <code>app.logicjigsaw.game</code>.</div>
+        <h3>Criar os três blocos</h3>
+        <p>No app Android, abra Blocos de anúncios e adicione um bloco por formato. O nome é só para você achar a linha no painel. O código não lê esse nome. Neste projeto os blocos foram nomeados pela função: faixa do jogo, abrir fase e desbloquear fase.</p>
+        <table>
+          <thead><tr><th>No painel, escolha</th><th>Não escolha</th><th>Variável</th></tr></thead>
+          <tbody>
+            <tr><td>Banner</td><td>Nativo, avançado ou anúncio de abertura</td><td><code>EXPO_PUBLIC_ADMOB_BANNER_ID</code></td></tr>
+            <tr><td>Intersticial</td><td>Intersticial premiado, anúncio de abertura</td><td><code>EXPO_PUBLIC_ADMOB_INTERSTITIAL_ID</code></td></tr>
+            <tr><td>Premiado</td><td>Intersticial premiado</td><td><code>EXPO_PUBLIC_ADMOB_REWARDED_ID</code></td></tr>
+          </tbody>
+        </table>
+        <p>O banner não pede tamanho no painel. O tamanho mora no código. A tela da fase usa <code>size="banner"</code>, a faixa fixa de 50 px, para não cobrir as peças. A lista de níveis usa o padrão adaptativo, ancorado na largura da tela. Os dois leem o mesmo bloco de banner.</p>
+        <p>O intersticial é a tela cheia ao entrar na fase. O formato “anúncio de abertura” parece a mesma coisa e não é: aquele aparece quando o app abre, e este projeto não chama essa API.</p>
+        <p>O premiado é o vídeo que a pessoa aceita assistir. Na criação, o painel pede um prêmio. Neste app a quantidade ficou 1 e o item ficou “Reward”. Esses campos são ignorados. Qualquer conclusão que dispare <code>EARNED_REWARD</code> abre a próxima fase. Fechar antes não conta.</p>
+        <div class="callout decision"><strong>Decisão.</strong> Lance de parceiros ficou desmarcado nos três blocos. Essa opção, se ligada na criação, não volta atrás. Piso de eCPM também ficou no automático do Google. Um piso alto em bloco novo costuma devolver “sem anúncio” e o botão de desbloquear falha.</div>
+        <div class="callout pitfall"><strong>Formato errado.</strong> “Intersticial premiado” é outro produto. O código cria <code>RewardedAd</code>, não o intersticial premiado. Se o id da variável rewarded for desse formato, o modal abre o fluxo e o anúncio não completa a recompensa.</div>
+        <h3>Onde colar os ids dos blocos</h3>
+        <ol class="steps">
+          <li>No <code>.env</code> local, <code>EXPO_PUBLIC_ADS_ENABLED=true</code> e as três variáveis com o id que tem <code>/</code>. Reinicie o Metro. O arquivo não vai para o Git.</li>
+          <li>No EAS, grave as mesmas variáveis nos ambientes preview e production, com visibilidade sensitive ou plaintext. Secret não entra no JavaScript.</li>
+          <li>Gere outro APK de preview. O pacote antigo continua com os ids que estavam no ambiente na hora daquele build.</li>
+        </ol>
+        <pre><code>npx eas-cli env:set --name EXPO_PUBLIC_ADS_ENABLED --value true --visibility plaintext --environment preview --environment production --non-interactive
+npx eas-cli env:set --name EXPO_PUBLIC_ADMOB_BANNER_ID --value "ca-app-pub-xxxx/banner" --visibility sensitive --environment preview --environment production --non-interactive
+npx eas-cli env:set --name EXPO_PUBLIC_ADMOB_INTERSTITIAL_ID --value "ca-app-pub-xxxx/interstitial" --visibility sensitive --environment preview --environment production --non-interactive
+npx eas-cli env:set --name EXPO_PUBLIC_ADMOB_REWARDED_ID --value "ca-app-pub-xxxx/rewarded" --visibility sensitive --environment preview --environment production --non-interactive</code><button class="copy" type="button">Copiar</button></pre>
+        <p>Bloco recém-criado pode não ter anúncio por algumas horas. O app trata falha de carga como “não foi possível exibir”. Isso não significa que o id está no formato errado. Durante o estudo, use os ids de teste abaixo em vez de clicar no anúncio de produção da própria conta. Clique em anúncio real da própria conta pode limitar a veiculação.</p>
+        <p>Ids de teste oficiais do Google:</p>
+        <pre><code>App Android  ca-app-pub-3940256099942544~3347511713
+App iOS      ca-app-pub-3940256099942544~1458002511
+Banner       ca-app-pub-3940256099942544/6300978111
+Interstitial ca-app-pub-3940256099942544/1033173712
+Rewarded     ca-app-pub-3940256099942544/5224354917</code><button class="copy" type="button">Copiar</button></pre>
+        <p>Os dois primeiros, com <code>~</code>, são ids de app e só servem no <code>app.json</code>. Os três últimos, com <code>/</code>, são blocos e vão para o <code>.env</code>. Não publique o app na loja com esses ids de teste.</p>
+      </article>
+
+      <article class="module" id="m10" data-title="Compras">
+        <p class="kicker">Módulo 12</p>
+        <h2>Compra para remover anúncios</h2>
+        <p>O produto é uma compra única, id <code>remove_ads</code>, hoje pensada para Android. <code>expo-iap</code> fala com a Google Play. O aplicativo não acredita sozinho no recibo. Ele manda o token para a Edge Function <code>verify-purchase</code>.</p>
+        <ol class="steps">
+          <li>A função exige o usuário logado, via JWT.</li>
+          <li>Ela pergunta à API da Play Store, com uma conta de serviço que só existe no servidor.</li>
+          <li>Se a compra está paga e o token não pertence a outra conta, grava <code>ads_removed</code>.</li>
+          <li>O app lê <code>user_entitlements</code> e esconde banner, interstitial e o botão do anúncio premiado.</li>
+        </ol>
+        <div class="callout decision"><strong>Decisão.</strong> Não há política de insert para o cliente nessa tabela. Se houvesse, qualquer pessoa autenticada poderia marcar <code>ads_removed</code> sem pagar. A service role ignora o RLS e por isso fica só na função.</div>
+        <p>Códigos de falha viram texto na tela: sem login, compra pendente, token já ligado a outra conta, Expo Go, loja indisponível. A versão web do serviço de compra não tenta abrir a Play Store.</p>
+      </article>
+
+      <article class="module" id="m11" data-title="Login Google">
+        <p class="kicker">Módulo 13</p>
+        <h2>Login com e-mail e com Google</h2>
+        <p>E-mail usa <code>signInWithPassword</code> e <code>signUp</code>. Campos vazios nem chamam a rede. E-mail sem formato válido também não. Senha de cadastro com menos de 6 caracteres é recusada na tela, que é o mínimo padrão do Supabase. Criar conta também exige nickname válido. Entrar com uma conta já existente não pede o nickname de novo. Se a conta ainda não tiver um, a tela de perfil permanece aberta para gravar o nome.</p>
+        <p>O botão do Google está oculto enquanto <code>GOOGLE_SIGN_IN_ENABLED</code> em <code>app/auth.tsx</code> for <code>false</code>. O fluxo no store continua: um development build ou um binário de preview troca o id token por sessão com <code>signInWithIdToken</code>. Expo Go e web mostram uma mensagem traduzida em vez de quebrar. O client id de iOS no <code>app.json</code> ainda é um placeholder.</p>
+        <div class="callout project"><strong>No projeto.</strong> Se o Supabase não está configurado, o botão de entrar lança “Configure o Supabase para entrar.” Foi exatamente o que o APK de preview fez antes das variáveis existirem no EAS.</div>
+      </article>
+
+      <article class="module" id="m12" data-title="Builds e ambiente">
+        <p class="kicker">Módulo 14</p>
+        <h2>Ambiente, EAS e os três perfis de build</h2>
+        <p>Tudo que o JavaScript precisa em produção e começa com <code>EXPO_PUBLIC_</code> é copiado para o pacote na hora do build. Não dá para mudar a chave do Supabase no APK já instalado sem outro build ou um sistema de atualização OTA, que este projeto ainda não usa.</p>
+        <pre><code>{
+  "build": {
+    "development": { "developmentClient": true, "distribution": "internal" },
+    "preview": { "distribution": "internal", "android": { "buildType": "apk" } },
+    "production": { "autoIncrement": true }
+  }
+}</code><button class="copy" type="button">Copiar</button></pre>
+        <table>
+          <thead><tr><th>Perfil</th><th>Android</th><th>Para quem</th></tr></thead>
+          <tbody>
+            <tr><td>development</td><td>Cliente que espera o Metro</td><td>Quem programa, com cabo ou QR do servidor local</td></tr>
+            <tr><td>preview</td><td>APK instalável</td><td>Teste no celular, sem loja</td></tr>
+            <tr><td>production</td><td>AAB, número de versão sobe sozinho</td><td>Google Play</td></tr>
+          </tbody>
+        </table>
+        <h3>Scripts de build</h3>
+        <pre><code>npx eas-cli login
+npx eas-cli env:set --name EXPO_PUBLIC_SUPABASE_URL --value "https://xxxx.supabase.co" --visibility sensitive --environment preview --environment production --non-interactive
+npx eas-cli build --profile preview --platform android --non-interactive
+npx eas-cli build --profile production --platform android --non-interactive
+npx eas-cli build --profile production --platform ios --non-interactive</code><button class="copy" type="button">Copiar</button></pre>
+        <p>Este repositório não traz <code>extra.eas.projectId</code>. No primeiro <code>eas build</code>, o CLI pede para criar um projeto na sua conta Expo. O primeiro build Android cria um keystore nessa conta. Os seguintes reutilizam esse keystore. Perder a conta Expo sem backup do keystore impede atualizar o mesmo aplicativo na Play Store.</p>
+        <div class="callout pitfall"><strong>Problema.</strong> <code>eas</code> sem <code>npx eas-cli</code> falha no PowerShell com “termo não reconhecido”. A build em si roda na nuvem. Fechar o terminal depois que o link <code>expo.dev/.../builds/...</code> apareceu não cancela o trabalho remoto. Cancelar só para de esperar.</div>
+        <p>Confira no log a linha “Environment variables loaded”. Se o nome da variável rewarded não estiver ali, o botão do anúncio não vai existir naquele APK.</p>
+      </article>
+
+      <article class="module" id="m13" data-title="Lojas">
+        <p class="kicker">Módulo 15</p>
+        <h2>Publicar na Google Play e na App Store</h2>
+        <p>Build pronta não é lançamento. A loja ainda exige ficha, classificação etária, política de privacidade e, neste app, declaração de anúncios, conta e compra.</p>
+        <h3>Android, Google Play</h3>
+        <ol class="steps">
+          <li>Crie a conta Play Console. A taxa é única ($25).</li>
+          <li>Crie o app com o pacote <code>app.logicjigsaw.game</code>, o mesmo de <code>app.json</code>.</li>
+          <li>Crie o produto gerenciado <code>remove_ads</code> e ative-o.</li>
+          <li>Na Play Console, crie uma conta de serviço com acesso às compras e guarde o JSON só nos segredos da função Supabase, como <code>GOOGLE_PLAY_SERVICE_ACCOUNT</code>.</li>
+          <li>Gere o AAB com o perfil <code>production</code>.</li>
+          <li>Envie primeiro para um teste interno. Instale por esse trilho antes da produção.</li>
+          <li>Preencha a ficha, ícones, classificação, segurança dos dados e a política de privacidade em uma URL pública.</li>
+          <li>Declare anúncios. O AdMob e a Play precisam concordar que o app mostra anúncio.</li>
+        </ol>
+        <pre><code>npx eas-cli build --profile production --platform android --non-interactive
+npx eas-cli submit --profile production --platform android --latest</code><button class="copy" type="button">Copiar</button></pre>
+        <p>O AAB não se instala tocando no arquivo, como o APK de preview. Quem testa produção usa o link da Play, em teste interno, fechado ou aberto.</p>
+        <h3>iOS, App Store</h3>
+        <ol class="steps">
+          <li>Entre no Apple Developer Program. A taxa é anual.</li>
+          <li>O bundle id já previsto é <code>app.logicjigsaw.game</code>.</li>
+          <li>O EAS pode criar certificado e perfil de provisionamento. Não commite <code>.p12</code> nem senha no Git.</li>
+          <li>Gere a build iOS de produção e envie ao App Store Connect. O primeiro destino útil é o TestFlight.</li>
+          <li>Preencha a ficha de privacidade. Conte login, identificadores de anúncio e compra.</li>
+          <li>Se o AdMob rastrear entre apps, prepare o texto de permissão de rastreamento. Sem isso, a revisão pode recusar.</li>
+          <li>Troque o id de anúncio iOS de teste que ainda está no <code>app.json</code> e o URL scheme falso do Google Sign-In antes de enviar para revisão.</li>
+        </ol>
+        <pre><code>npx eas-cli build --profile production --platform ios --non-interactive
+npx eas-cli submit --profile production --platform ios --latest</code><button class="copy" type="button">Copiar</button></pre>
+        <div class="callout pitfall"><strong>Estado deste repositório.</strong> Os ids de anúncio no <code>app.json</code> são os de teste do Google, e o esquema do Google Sign-In no iOS é placeholder. Publicar assim leva anúncio de teste e login Google quebrado. Troque pelos ids da sua conta antes da loja.</div>
+        <h3>O que escrever na política de privacidade</h3>
+        <ul>
+          <li>Conta opcional: e-mail e identificador do provedor. O nickname do ranking é público. O e-mail não entra nessa lista.</li>
+          <li>Recorde de tempo das fases, ligado à conta quando a pessoa entra.</li>
+          <li>Anúncios do Google, inclusive premiado, até a compra de remoção.</li>
+          <li>Token de compra conferido no servidor. O app não guarda o cartão.</li>
+          <li>Progresso local no aparelho, apagável em Ajustes.</li>
+        </ul>
+        <h3>Ordem segura de lançamento</h3>
+        <ol class="steps">
+          <li>APK preview no próprio celular: jogo, login, anúncio de teste, cadeado.</li>
+          <li>Ids reais de anúncio só quando você aceita impressões de verdade.</li>
+          <li>Teste interno da Play com a compra <code>remove_ads</code> em conta de licença de teste.</li>
+          <li>TestFlight no iOS depois de trocar os placeholders.</li>
+          <li>Produção por último, com a política de privacidade no ar.</li>
+        </ol>
+      </article>
+
+      <article class="module" id="m14" data-title="Decisões">
+        <p class="kicker">Módulo 16</p>
+        <h2>Decisões reunidas</h2>
+        <table>
+          <thead><tr><th>Escolha</th><th>Motivo</th></tr></thead>
+          <tbody>
+            <tr><td>Jogo jogável sem conta</td><td>A nuvem é um extra. Sem chave, o recorde fica no aparelho</td></tr>
+            <tr><td>RLS e service role separados</td><td>O cliente não pode se dar o direito de remover anúncio</td></tr>
+            <tr><td>Menor tempo ganha no sync</td><td>Dois aparelhos não se apagam</td></tr>
+            <tr><td>Cadeado fase a fase</td><td>As 88 fases são uma trilha, não cinco listas soltas</td></tr>
+            <tr><td>Anúncio premiado não marca vitória</td><td>Abrir a fase e concluí-la são fatos diferentes</td></tr>
+            <tr><td>Arquivos <code>.web.ts</code></td><td>O Metro troca a implementação na web sem <code>if</code> espalhado</td></tr>
+            <tr><td>Preview em APK, produção em AAB</td><td>APK instala na hora. A Play pede AAB</td></tr>
+            <tr><td>Sem pastas nativas no Git</td><td>Plugins e <code>app.json</code> são a fonte. Editar Java à mão seria apagado no próximo build</td></tr>
+            <tr><td>Ranking por função, não por select aberto</td><td>O cliente vê nickname e tempo. Não vê e-mail nem a tabela inteira de progresso</td></tr>
+            <tr><td>Nickname único sem diferenciar maiúsculas</td><td>Duas pessoas não ocupam o mesmo nome só mudando a caixa</td></tr>
+            <tr><td>Erros de auth traduzidos</td><td>A API responde em inglês. A tela fala o idioma do app</td></tr>
+            <tr><td>Design no ChatGPT, tela no Cursor</td><td>A imagem define o visual. O código entra no app que já tem rota, estado e idioma</td></tr>
+          </tbody>
+        </table>
+      </article>
+
+      <article class="module" id="m15" data-title="Exercícios">
+        <p class="kicker">Módulo 17</p>
+        <h2>Roteiro e exercícios</h2>
+        <p>Marque o que já fez. A marcação fica neste navegador.</p>
+        <ul class="checks" id="checks">
+          <li><label><input type="checkbox" data-key="ex1" /> Subir o Metro e abrir a fase 1 na web.</label></li>
+          <li><label><input type="checkbox" data-key="ex2" /> Achar <code>isSolved</code> e explicar por que são 64 casas.</label></li>
+          <li><label><input type="checkbox" data-key="ex3" /> Rodar o laboratório do cadeado com a fase 3 só por anúncio, sem concluir a 2.</label></li>
+          <li><label><input type="checkbox" data-key="ex4" /> Normalizar uma URL que termina em <code>/rest/v1/</code>.</label></li>
+          <li><label><input type="checkbox" data-key="ex5" /> Ler as políticas do <code>schema.sql</code> e dizer quem pode inserir em <code>user_entitlements</code>.</label></li>
+          <li><label><input type="checkbox" data-key="ex6" /> Diferenciar, em uma frase, development build e APK de preview.</label></li>
+          <li><label><input type="checkbox" data-key="ex7" /> Listar o que falta trocar antes de um envio iOS de verdade.</label></li>
+          <li><label><input type="checkbox" data-key="ex8" /> Explicar por que o ranking usa <code>leaderboard_players</code> em vez de um select aberto em <code>puzzle_progress</code>.</label></li>
+        </ul>
+        <h3>Perguntas para discutir</h3>
+        <ol>
+          <li>O que quebra se <code>isPuzzleUnlocked</code> passar a abrir qualquer fase já alcançada por anúncio, pulando as do meio?</li>
+          <li>Por que o banner dentro do mesmo scroll das peças seria um problema?</li>
+          <li>Se a pessoa concluir a fase 4 no celular A e a fase 4 mais rápido no celular B, qual tempo deve permanecer?</li>
+          <li>Qual segredo pode ir no APK e qual não pode?</li>
+          <li>Uma pessoa concluiu 10 fases e outra concluiu as mesmas 10, só que mais rápido. Quem fica na frente na aba de fases completas, e por quê?</li>
+        </ol>
+        <div class="callout project"><strong>Respostas curtas.</strong> 1. A trilha deixa de ser sequencial. 2. O anúncio rola junto e cobre o toque nas peças, ou some quando a pessoa desce. 3. O menor tempo, que é o que <code>mergeRecords</code> escolhe. 4. A chave anon e os ids de anúncio podem. Senha do banco, service role e JSON da conta Google Play não podem. 5. As duas têm 10 fases. Ganha quem tem a menor soma dos recordes, que é o desempate de <code>leaderboard_players</code>.</div>
+      </article>
+    </main>
+  </div>
+  <script>
+    const nav = document.getElementById("nav");
+    const modules = [...document.querySelectorAll(".module")];
+    modules.forEach((section) => {
+      const a = document.createElement("a");
+      a.href = "#" + section.id;
+      a.textContent = section.dataset.title;
+      nav.appendChild(a);
+    });
+
+    const menuBtn = document.getElementById("menuBtn");
+    const side = document.getElementById("side");
+    menuBtn.addEventListener("click", () => {
+      const open = side.classList.toggle("open");
+      menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    nav.addEventListener("click", (event) => {
+      if (event.target.tagName === "A") side.classList.remove("open");
+    });
+
+    const q = document.getElementById("q");
+    const empty = document.getElementById("empty");
+    q.addEventListener("input", () => {
+      const term = q.value.trim().toLowerCase();
+      let shown = 0;
+      modules.forEach((section) => {
+        const hit = !term || section.textContent.toLowerCase().includes(term) || section.dataset.title.toLowerCase().includes(term);
+        section.hidden = !hit;
+        const link = nav.querySelector('a[href="#' + section.id + '"]');
+        if (link) link.hidden = !hit;
+        if (hit) shown += 1;
+      });
+      empty.style.display = shown ? "none" : "block";
+    });
+
+    document.querySelectorAll("pre").forEach((pre) => {
+      const button = pre.querySelector(".copy");
+      const code = pre.querySelector("code");
+      if (!button || !code) return;
+      button.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.textContent = "Copiado";
+        } catch {
+          button.textContent = "Selecione";
+        }
+        setTimeout(() => { button.textContent = "Copiar"; }, 1600);
+      });
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        nav.querySelectorAll("a").forEach((link) => link.removeAttribute("aria-current"));
+        const current = nav.querySelector('a[href="#' + entry.target.id + '"]');
+        if (current) current.setAttribute("aria-current", "true");
+      });
+    }, { rootMargin: "-40% 0px -50% 0px" });
+    modules.forEach((section) => observer.observe(section));
+
+    function unlocked(done, granted) {
+      const result = [];
+      for (let id = 1; id <= 8; id += 1) {
+        let open = true;
+        for (let cursor = 2; cursor <= id; cursor += 1) {
+          const previousCompleted = done.has(cursor - 1);
+          const grantedThis = granted.has(cursor);
+          open = open && (previousCompleted || grantedThis);
+          if (!open) break;
+        }
+        result.push(open);
+      }
+      return result;
+    }
+
+    const doneRow = document.getElementById("doneRow");
+    const grantRow = document.getElementById("grantRow");
+    for (let id = 1; id <= 8; id += 1) {
+      const doneLabel = document.createElement("label");
+      doneLabel.className = "chip";
+      doneLabel.innerHTML = '<input type="checkbox" data-done="' + id + '" /> Concluiu ' + id;
+      doneRow.appendChild(doneLabel);
+      if (id > 1) {
+        const grantLabel = document.createElement("label");
+        grantLabel.className = "chip";
+        grantLabel.innerHTML = '<input type="checkbox" data-grant="' + id + '" /> Anúncio ' + id;
+        grantRow.appendChild(grantLabel);
+      }
+    }
+    document.getElementById("runUnlock").addEventListener("click", () => {
+      const done = new Set([...doneRow.querySelectorAll("input:checked")].map((input) => Number(input.dataset.done)));
+      const granted = new Set([...grantRow.querySelectorAll("input:checked")].map((input) => Number(input.dataset.grant)));
+      const flags = unlocked(done, granted);
+      const openIds = flags.map((open, index) => open ? index + 1 : null).filter(Boolean);
+      const next = flags.findIndex((open) => !open);
+      document.getElementById("unlockOut").textContent =
+        "Abertas: " + openIds.join(", ") + ". Próxima bloqueada: " + (next === -1 ? "nenhuma" : next + 1) + ".";
+    });
+    document.getElementById("runUnlock").click();
+
+    document.getElementById("runUrl").addEventListener("click", () => {
+      const raw = document.getElementById("urlInput").value;
+      const url = raw.trim().replace(/\/+$/, "").replace(/\/rest\/v1$/i, "");
+      let auth = "";
+      let rest = "";
+      try {
+        auth = new URL("auth/v1/signup", url.endsWith("/") ? url : url + "/").href;
+        rest = new URL("rest/v1/", url.endsWith("/") ? url : url + "/").href;
+      } catch {
+        document.getElementById("urlOut").textContent = "URL inválida.";
+        return;
+      }
+      document.getElementById("urlOut").textContent = "Projeto: " + url + " · Login: " + auth + " · Banco: " + rest;
+    });
+
+    const storeKey = "logic-jigsaw-minicurso-progress";
+    const saved = JSON.parse(localStorage.getItem(storeKey) || "{}");
+    document.querySelectorAll("#checks input").forEach((input) => {
+      input.checked = Boolean(saved[input.dataset.key]);
+      input.addEventListener("change", () => {
+        saved[input.dataset.key] = input.checked;
+        localStorage.setItem(storeKey, JSON.stringify(saved));
+      });
+    });
+  </script>
+</body>
+</html>
